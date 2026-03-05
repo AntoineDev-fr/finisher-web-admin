@@ -1,0 +1,529 @@
+/* =====================================================
+   FINISHER — Modern Running Design System
+   ===================================================== */
+
+/* ── Variables ──────────────────────────────────────── */
+:root {
+  color-scheme: light;
+  --primary:       #FF6B35;
+  --primary-dark:  #E55A2B;
+  --secondary:     #2D3748;
+  --accent:        #48BB78;
+  --danger:        #FC8181;
+  --danger-dark:   #F56565;
+  --bg:            #F7FAFC;
+  --surface:       #FFFFFF;
+  --text:          #1A202C;
+  --text-muted:    #718096;
+  --border:        #E2E8F0;
+}
+
+/* ── Base ───────────────────────────────────────────── */
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+               'Helvetica Neue', Arial, sans-serif;
+}
+
+/* ── Skip Link ──────────────────────────────────────── */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: #111;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 6px;
+  z-index: 1000;
+}
+.skip-link:focus {
+  left: 16px;
+  top: 16px;
+}
+
+/* ── Focus ──────────────────────────────────────────── */
+:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ── Navbar ─────────────────────────────────────────── */
+.navbar.bg-dark,
+.bg-dark.navbar-dark {
+  background-color: #1A202C !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.navbar-brand {
+  font-weight: 700;
+  font-size: 1.3rem;
+  color: var(--primary) !important;
+  letter-spacing: -0.3px;
+}
+.navbar-brand:hover {
+  color: var(--primary-dark) !important;
+}
+
+/* Pill-shaped navbar buttons */
+.navbar .btn {
+  border-radius: 20px;
+  padding: 5px 16px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+.navbar .btn-outline-light {
+  border-color: rgba(255, 255, 255, 0.45);
+  color: #fff;
+}
+.navbar .btn-outline-light:hover,
+.navbar .btn-outline-light:focus {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+/* "Admin" active button — filled orange */
+.navbar .btn-light {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+  font-weight: 600;
+}
+.navbar .btn-light:hover,
+.navbar .btn-light:focus {
+  background-color: var(--primary-dark);
+  border-color: var(--primary-dark);
+  color: #fff;
+}
+
+/* ── Layout ─────────────────────────────────────────── */
+.container {
+  max-width: 1200px;
+}
+main#main {
+  padding-top: 40px;
+  padding-bottom: 48px;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+/* ── Page Titles ────────────────────────────────────── */
+main h1 {
+  font-weight: 800;
+  font-size: 2rem;
+  color: var(--text);
+}
+/* Orange decorative bar under standalone titles */
+main h1.mb-4::after {
+  content: '';
+  display: block;
+  width: 60px;
+  height: 3px;
+  background: var(--primary);
+  margin-top: 8px;
+  border-radius: 2px;
+}
+/* Flex-row titles (m-0 inside d-flex) still get the bar but via margin */
+main .d-flex h1.m-0 {
+  font-size: 1.8rem;
+  font-weight: 800;
+}
+
+/* ── Buttons (General) ──────────────────────────────── */
+.btn {
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  border-width: 1.5px;
+}
+.btn-sm {
+  padding: 6px 14px;
+  font-size: 0.82rem;
+}
+
+/* Primary & Success → energetic orange */
+.btn-primary,
+.btn-success {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-success:hover,
+.btn-success:focus {
+  background-color: var(--primary-dark);
+  border-color: var(--primary-dark);
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.35);
+}
+.btn-primary:active,
+.btn-success:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* Danger — soft red */
+.btn-danger {
+  background-color: var(--danger);
+  border-color: var(--danger);
+  color: #fff;
+}
+.btn-danger:hover,
+.btn-danger:focus {
+  background-color: var(--danger-dark);
+  border-color: var(--danger-dark);
+  color: #fff;
+  transform: translateY(-1px);
+}
+.btn-danger:active {
+  transform: translateY(0);
+}
+
+/* Secondary / Outline → clean white surface */
+.btn-outline-secondary,
+.btn-outline-primary,
+.btn-outline-dark {
+  background-color: var(--surface);
+  border-color: var(--border);
+  color: var(--secondary);
+}
+.btn-outline-secondary:hover,
+.btn-outline-secondary:focus,
+.btn-outline-primary:hover,
+.btn-outline-primary:focus,
+.btn-outline-dark:hover,
+.btn-outline-dark:focus {
+  background-color: var(--bg);
+  border-color: #CBD5E0;
+  color: var(--secondary);
+}
+
+/* ── Forms ──────────────────────────────────────────── */
+.form-label {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #374151;
+  margin-bottom: 6px;
+}
+.form-control {
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  padding: 10px 14px;
+  font-size: 0.95rem;
+  background-color: var(--surface);
+  color: var(--text);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.form-control:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.15);
+  background-color: var(--surface);
+  color: var(--text);
+}
+.form-control.is-invalid {
+  border-color: var(--danger);
+}
+.form-control.is-invalid:focus {
+  box-shadow: 0 0 0 3px rgba(252, 129, 129, 0.2);
+}
+.invalid-feedback {
+  font-size: 0.82rem;
+  color: var(--danger-dark);
+}
+.form-text {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+/* Search bar — icon + rounded */
+#race-search {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23718096' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.099zm-5.242 1.656a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 12px center;
+  padding-left: 38px;
+  border-radius: 10px;
+}
+#race-search:focus {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08),
+              0 0 0 3px rgba(255, 107, 53, 0.15);
+}
+
+/* ── Admin Races Table ──────────────────────────────── */
+.table-responsive {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background: var(--surface);
+}
+.table {
+  margin-bottom: 0;
+  background: var(--surface);
+  --bs-table-bg: var(--surface);
+  --bs-table-striped-bg: var(--surface);
+  --bs-table-hover-bg: #FFF5F0;
+}
+.table thead th {
+  background: var(--bg);
+  color: #374151;
+  font-weight: 700;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid var(--border) !important;
+  padding: 14px 16px;
+}
+.table tbody td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Remove Bootstrap striped coloring */
+.table-striped > tbody > tr:nth-of-type(odd) > * {
+  --bs-table-accent-bg: transparent;
+  background-color: transparent;
+}
+
+/* Row hover */
+.table tbody tr {
+  transition: background 0.15s ease;
+}
+.table tbody tr:hover > td {
+  background-color: #FFF5F0;
+  --bs-table-accent-bg: #FFF5F0;
+}
+
+/* ── Details Table (.table-bordered) ───────────────── */
+.table-bordered {
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--border) !important;
+}
+.table-bordered > :not(caption) > * > * {
+  border-color: #F0F0F0;
+}
+.table-bordered th[scope="row"] {
+  background: var(--bg);
+  font-weight: 700;
+  color: #374151;
+  width: 200px;
+  padding: 14px 20px;
+  border-right: 1px solid var(--border);
+}
+.table-bordered td {
+  padding: 14px 20px;
+  color: var(--text);
+}
+.table-bordered tr:last-child th,
+.table-bordered tr:last-child td {
+  border-bottom: none;
+}
+
+/* ── Flash Alerts ───────────────────────────────────── */
+.alert {
+  border-radius: 8px;
+  font-size: 0.925rem;
+  font-weight: 500;
+}
+.alert-success {
+  background-color: #F0FFF4;
+  border-color: #9AE6B4;
+  color: #276749;
+}
+.alert-warning {
+  background-color: #FFFAF0;
+  border-color: #FBD38D;
+  color: #7B341E;
+}
+.alert-danger {
+  background-color: #FFF5F5;
+  border-color: var(--danger);
+  color: #9B2C2C;
+}
+.alert-info {
+  background-color: #EBF8FF;
+  border-color: #90CDF4;
+  color: #2A4365;
+}
+
+/* ── Public Race Cards — style finishers.com ────────── */
+
+/* 4 colonnes sur grands écrans */
+@media (min-width: 1200px) {
+  .row.g-4 > .col-lg-4 {
+    width: 25%;
+    flex: 0 0 auto;
+  }
+}
+
+.card {
+  border: none;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--surface);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+.card:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.13) !important;
+  transform: translateY(-2px);
+}
+
+/* Image haute, pleine largeur, sans arrondi en bas */
+.card-img-top {
+  height: 260px;
+  object-fit: cover;
+  border-radius: 0;
+  display: block;
+  width: 100%;
+}
+
+/* Bandeau "type de course" en overlay bas de photo */
+.card {
+  position: relative;
+}
+.card::before {
+  content: 'RUNNING EVENT';
+  position: absolute;
+  bottom: calc(100% - 260px);    /* collé au bas de l'image */
+  left: 0;
+  background: rgba(20, 20, 40, 0.82);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.card-body {
+  padding: 14px 16px 16px;
+}
+
+/* Date — petite, grise, avec puce verte */
+.card-text.text-muted {
+  font-size: 0.8rem !important;
+  color: #6b7280 !important;
+  font-weight: 500;
+  margin-bottom: 6px !important;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.card-text.text-muted::before {
+  content: '';
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #22c55e;
+  flex-shrink: 0;
+}
+
+/* Titre de la course — très bold, uppercase, marine */
+.card-title {
+  font-weight: 900;
+  font-size: 0.95rem;
+  color: #12175e;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  line-height: 1.3;
+  margin-bottom: 6px;
+}
+
+/* Prix */
+.card-text:not(.text-muted) {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* Zone bouton — séparateur en haut */
+.card-body .mt-auto {
+  padding-top: 14px;
+  margin-top: 12px !important;
+  border-top: 1.5px solid var(--border);
+}
+
+/* Bouton "View details" → lien texte style DÉTAILS */
+.card .btn-primary {
+  background: none !important;
+  border: none !important;
+  border-bottom: 2px solid #12175e !important;
+  border-radius: 0 !important;
+  color: #12175e !important;
+  font-weight: 800;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0 0 3px 0 !important;
+  box-shadow: none !important;
+  transform: none !important;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.card .btn-primary:hover,
+.card .btn-primary:focus {
+  background: none !important;
+  color: var(--primary) !important;
+  border-bottom-color: var(--primary) !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.shadow-sm {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* ── Login Card ─────────────────────────────────────── */
+.row.justify-content-center > [class*="col-"] {
+  background: var(--surface);
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+  padding: 40px;
+  margin-top: 40px;
+}
+.row.justify-content-center h1 {
+  text-align: center;
+}
+.row.justify-content-center h1.mb-4::after {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ── Race Detail Image ──────────────────────────────── */
+.img-fluid.rounded {
+  border-radius: 12px !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  object-fit: cover;
+}
+
+/* ── Map ────────────────────────────────────────────── */
+.map {
+  height: 320px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+}
+
+/* ── Thumb ──────────────────────────────────────────── */
+.thumb {
+  width: 64px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}

@@ -1,0 +1,10 @@
+{
+  "name": "finisher/web-admin",
+  "description": "Finisher web admin (PHP 8.2, no framework)",
+  "type": "project",
+  "require": {
+    "php": ">=8.2",
+    "phpmailer/phpmailer": "^6.9",
+    "dompdf/dompdf": "^2.0"
+  }
+}
