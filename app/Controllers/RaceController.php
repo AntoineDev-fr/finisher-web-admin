@@ -7,10 +7,8 @@ use App\Core\Request;
 use App\Core\Response;
 use App\Core\View;
 use App\Core\Validator;
-use App\Core\Mailer;
 use App\Core\Pdf;
 use App\Core\ApiClient;
-use App\Models\Race;
 
 final class RaceController
 {
@@ -25,7 +23,11 @@ final class RaceController
 
     public function index(Request $request): void
     {
-        $races = Race::all();
+        $res = $this->apiClient->fetchAllRaces('');
+        if (!$res['ok']) {
+            Response::abort(502, 'API error: ' . ($res['error'] ?? 'unknown'));
+        }
+        $races = $res['data'] ?? [];
         $html = View::render('races/index', [
             'title' => 'Races',
             'races' => $races,
@@ -37,7 +39,11 @@ final class RaceController
     public function search(Request $request): void
     {
         $q = trim((string)$request->queryParam('q', ''));
-        $races = Race::search($q);
+        $res = $this->apiClient->fetchAllRaces($q);
+        if (!$res['ok']) {
+            Response::html('', 502);
+        }
+        $races = $res['data'] ?? [];
         $html = View::render('races/_table', ['races' => $races], false);
         Response::html($html);
     }
@@ -69,9 +75,14 @@ final class RaceController
             Response::html($html, 422);
         }
 
-        $upload = $this->apiClient->uploadPhoto($files['photo']);
-        if (!$upload['ok']) {
-            $errors = ['photo' => $upload['error'] ?? 'Upload failed.'];
+        $res = $this->apiClient->createRace($clean, $files['photo']);
+        if (!$res['ok']) {
+            $apiError = $res['data']['error'] ?? '';
+            if ($apiError === 'validation_error' && isset($res['data']['fields'])) {
+                $errors = $res['data']['fields'];
+            } else {
+                $errors = ['form' => $res['error'] ?? 'API error'];
+            }
             $old = $this->mergeOld($data);
             $html = View::render('races/create', [
                 'title' => 'Create Race',
@@ -81,31 +92,24 @@ final class RaceController
             Response::html($html, 422);
         }
 
-        $photoPath = (string)($upload['photo_path'] ?? '');
-        if ($photoPath === '') {
-            Response::abort(500, 'Upload failed.');
+        $race = $res['data'] ?? [];
+        $id = (int)($race['id'] ?? 0);
+        if ($id <= 0) {
+            Response::abort(502, 'Invalid API response.');
         }
-        $now = date('Y-m-d H:i:s');
-
-        $clean['photo_path'] = $photoPath;
-        $clean['created_at'] = $now;
-        $clean['updated_at'] = $now;
-
-        $race = Race::create($clean);
-        $link = rtrim($this->config['app']['url'], '/') . '/races/' . $race['id'];
-        $this->sendCreationEmail($race, $link);
 
         View::setFlash('flash_success', 'Race created.');
-        Response::redirect('/admin/races/' . $race['id']);
+        Response::redirect('/admin/races/' . $id);
     }
 
     public function show(Request $request): void
     {
         $id = (int)$request->param('id');
-        $race = Race::find($id);
-        if ($race === null) {
+        $res = $this->apiClient->getRace($id);
+        if (!$res['ok']) {
             Response::abort(404, 'Race not found.');
         }
+        $race = $res['data'];
 
         $html = View::render('races/show', [
             'title' => 'Race Details',
@@ -117,10 +121,11 @@ final class RaceController
     public function edit(Request $request): void
     {
         $id = (int)$request->param('id');
-        $race = Race::find($id);
-        if ($race === null) {
+        $res = $this->apiClient->getRace($id);
+        if (!$res['ok']) {
             Response::abort(404, 'Race not found.');
         }
+        $race = $res['data'];
 
         $old = $this->mergeOld($race);
         $html = View::render('races/edit', [
@@ -135,10 +140,11 @@ final class RaceController
     public function update(Request $request): void
     {
         $id = (int)$request->param('id');
-        $race = Race::find($id);
-        if ($race === null) {
+        $resRace = $this->apiClient->getRace($id);
+        if (!$resRace['ok']) {
             Response::abort(404, 'Race not found.');
         }
+        $race = $resRace['data'];
 
         $data = $request->post;
         $files = $request->files;
@@ -156,32 +162,29 @@ final class RaceController
             Response::html($html, 422);
         }
 
-        $photoPath = $race['photo_path'];
+        $file = null;
         if (!empty($files['photo']) && ($files['photo']['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
-            $upload = $this->apiClient->uploadPhoto($files['photo']);
-            if (!$upload['ok']) {
-                $errors = ['photo' => $upload['error'] ?? 'Upload failed.'];
-                $old = $this->mergeOld($merged);
-                $html = View::render('races/edit', [
-                    'title' => 'Edit Race',
-                    'errors' => $errors,
-                    'old' => $old,
-                    'race' => $race,
-                ]);
-                Response::html($html, 422);
-            }
-
-            $photoPath = (string)($upload['photo_path'] ?? '');
-            if ($photoPath === '') {
-                Response::abort(500, 'Upload failed.');
-            }
-            $this->apiClient->deletePhoto($race['photo_path']);
+            $file = $files['photo'];
         }
 
-        $clean['photo_path'] = $photoPath;
-        $clean['updated_at'] = date('Y-m-d H:i:s');
+        $res = $this->apiClient->updateRace($id, $clean, $file);
+        if (!$res['ok']) {
+            $apiError = $res['data']['error'] ?? '';
+            if ($apiError === 'validation_error' && isset($res['data']['fields'])) {
+                $errors = $res['data']['fields'];
+            } else {
+                $errors = ['form' => $res['error'] ?? 'API error'];
+            }
+            $old = $this->mergeOld($merged);
+            $html = View::render('races/edit', [
+                'title' => 'Edit Race',
+                'errors' => $errors,
+                'old' => $old,
+                'race' => $race,
+            ]);
+            Response::html($html, 422);
+        }
 
-        Race::update($id, $clean);
         View::setFlash('flash_success', 'Race updated.');
         Response::redirect('/admin/races/' . $id);
     }
@@ -189,13 +192,10 @@ final class RaceController
     public function delete(Request $request): void
     {
         $id = (int)$request->param('id');
-        $race = Race::find($id);
-        if ($race === null) {
-            Response::abort(404, 'Race not found.');
+        $res = $this->apiClient->deleteRace($id);
+        if (!$res['ok']) {
+            Response::abort(502, 'API error: ' . ($res['error'] ?? 'unknown'));
         }
-
-        Race::delete($id);
-        $this->apiClient->deletePhoto($race['photo_path']);
 
         View::setFlash('flash_success', 'Race deleted.');
         Response::redirect('/admin/races');
@@ -204,12 +204,13 @@ final class RaceController
     public function pdf(Request $request): void
     {
         $id = (int)$request->param('id');
-        $race = Race::find($id);
-        if ($race === null) {
+        $res = $this->apiClient->getRace($id);
+        if (!$res['ok']) {
             Response::abort(404, 'Race not found.');
         }
+        $race = $res['data'];
 
-        $photoDataUri = $this->photoDataUri($race['photo_path']);
+        $photoDataUri = $this->photoDataUri($race['photo_path'] ?? '');
         $html = $this->buildPdfHtml($race, $photoDataUri);
         Pdf::download($html, 'race-' . $id . '.pdf');
     }
@@ -248,37 +249,6 @@ final class RaceController
         }
     }
 
-    private function sendCreationEmail(array $race, string $link): void
-    {
-        $mailer = new Mailer($this->config);
-        $subject = 'Race created: ' . $race['nom'];
-        $html = $this->buildEmailHtml($race, $link);
-        $sent = $mailer->send($race['contact_email'], $subject, $html);
-
-        if (!$sent) {
-            View::setFlash('flash_error', 'Email could not be sent.');
-        }
-    }
-
-    private function buildEmailHtml(array $race, string $link): string
-    {
-        $e = fn ($v) => htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
-
-        return '<h2>Race confirmation</h2>' .
-            '<p>Your race has been created with the following data:</p>' .
-            '<ul>' .
-            '<li>Name: ' . $e($race['nom']) . '</li>' .
-            '<li>Description: ' . $e($race['description']) . '</li>' .
-            '<li>Date: ' . $e($race['date_event']) . '</li>' .
-            '<li>Price: ' . $e($race['prix']) . '</li>' .
-            '<li>Latitude: ' . $e($race['latitude']) . '</li>' .
-            '<li>Longitude: ' . $e($race['longitude']) . '</li>' .
-            '<li>Contact: ' . $e($race['contact_nom']) . '</li>' .
-            '<li>Email: ' . $e($race['contact_email']) . '</li>' .
-            '</ul>' .
-            '<p>View details: <a href="' . $e($link) . '">' . $e($link) . '</a></p>';
-    }
-
     private function photoDataUri(string $relativePath): string
     {
         $relativePath = ltrim($relativePath, '/');
@@ -286,16 +256,17 @@ final class RaceController
             return '';
         }
 
-        $fullPath = $this->publicPath() . DIRECTORY_SEPARATOR . $relativePath;
-        if (!is_file($fullPath)) {
+        $url = View::apiImageUrl($relativePath);
+        $data = @file_get_contents($url);
+        if ($data === false || $data === '') {
             return '';
         }
 
         $finfo = new \finfo(FILEINFO_MIME_TYPE);
-        $mime = $finfo->file($fullPath);
-        $data = base64_encode((string)file_get_contents($fullPath));
+        $mime = $finfo->buffer($data);
+        $encoded = base64_encode($data);
 
-        return 'data:' . $mime . ';base64,' . $data;
+        return 'data:' . $mime . ';base64,' . $encoded;
     }
 
     private function buildPdfHtml(array $race, string $photoDataUri): string

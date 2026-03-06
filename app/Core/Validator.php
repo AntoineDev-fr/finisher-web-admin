@@ -100,8 +100,8 @@ final class Validator
         }
 
         $size = $file['size'] ?? 0;
-        if ($size > 3 * 1024 * 1024) {
-            return 'Taille max 3 Mo.';
+        if ($size > 10 * 1024 * 1024) {
+            return 'Taille max 10 Mo.';
         }
 
         $tmp = $file['tmp_name'] ?? '';

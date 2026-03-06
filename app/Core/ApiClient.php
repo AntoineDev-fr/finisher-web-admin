@@ -73,6 +73,111 @@ final class ApiClient
         return $res['ok'];
     }
 
+    public function listRaces(int $page = 1, int $limit = 50, string $q = ''): array
+    {
+        $query = '?page=' . $page . '&limit=' . $limit;
+        if ($q !== '') {
+            $query .= '&q=' . rawurlencode($q);
+        }
+
+        $url = $this->internalUrl . '/api/races' . $query;
+        return $this->request('GET', $url);
+    }
+
+    public function fetchAllRaces(string $q = ''): array
+    {
+        $page = 1;
+        $limit = 50;
+        $all = [];
+        $total = 0;
+
+        while (true) {
+            $res = $this->listRaces($page, $limit, $q);
+            if (!$res['ok']) {
+                return $res;
+            }
+
+            $data = $res['data'] ?? [];
+            $items = is_array($data['data'] ?? null) ? $data['data'] : [];
+            $total = (int)($data['total'] ?? $total);
+            foreach ($items as $item) {
+                $all[] = $item;
+            }
+
+            $hasMore = (bool)($data['hasMore'] ?? false);
+            if (!$hasMore) {
+                break;
+            }
+            $page++;
+        }
+
+        return ['ok' => true, 'data' => $all, 'total' => $total];
+    }
+
+    public function getRace(int $id): array
+    {
+        $url = $this->internalUrl . '/api/races/' . $id;
+        return $this->request('GET', $url);
+    }
+
+    public function createRace(array $data, array $file): array
+    {
+        $token = $this->getToken();
+        if ($token === '') {
+            return ['ok' => false, 'error' => 'API token missing'];
+        }
+
+        $tmp = $file['tmp_name'] ?? '';
+        $name = $file['name'] ?? 'photo.jpg';
+        if ($tmp === '' || !is_file($tmp)) {
+            return ['ok' => false, 'error' => 'Invalid upload file'];
+        }
+
+        $url = $this->internalUrl . '/api/races';
+        $post = $this->buildMultipart($data, $file, $name);
+
+        return $this->request('POST', $url, [
+            'Authorization: Bearer ' . $token,
+        ], $post);
+    }
+
+    public function updateRace(int $id, array $data, ?array $file = null): array
+    {
+        $token = $this->getToken();
+        if ($token === '') {
+            return ['ok' => false, 'error' => 'API token missing'];
+        }
+
+        $url = $this->internalUrl . '/api/races/' . $id;
+
+        if ($file !== null && ($file['tmp_name'] ?? '') !== '' && is_file($file['tmp_name'])) {
+            $name = $file['name'] ?? 'photo.jpg';
+            $post = $this->buildMultipart($data, $file, $name);
+            return $this->request('PUT', $url, [
+                'Authorization: Bearer ' . $token,
+            ], $post);
+        }
+
+        $payload = json_encode($data);
+        return $this->request('PUT', $url, [
+            'Authorization: Bearer ' . $token,
+            'Content-Type: application/json',
+        ], $payload);
+    }
+
+    public function deleteRace(int $id): array
+    {
+        $token = $this->getToken();
+        if ($token === '') {
+            return ['ok' => false, 'error' => 'API token missing'];
+        }
+
+        $url = $this->internalUrl . '/api/races/' . $id;
+        return $this->request('DELETE', $url, [
+            'Authorization: Bearer ' . $token,
+        ]);
+    }
+
     private function getToken(): string
     {
         if (!empty($_SESSION['_api_token']) && !empty($_SESSION['_api_token_exp'])) {
@@ -154,6 +259,22 @@ final class ApiClient
             $message = (string)$data['error'];
         }
 
-        return ['ok' => false, 'error' => $message, 'status' => $status];
+        return [
+            'ok' => false,
+            'error' => $message,
+            'status' => $status,
+            'data' => is_array($data) ? $data : [],
+        ];
+    }
+
+    private function buildMultipart(array $data, array $file, string $name): array
+    {
+        $post = $data;
+        $post['photo'] = curl_file_create(
+            $file['tmp_name'],
+            $file['type'] ?? 'image/jpeg',
+            $name
+        );
+        return $post;
     }
 }

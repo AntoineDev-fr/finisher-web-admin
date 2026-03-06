@@ -49,7 +49,7 @@ $router = new Router();
 
 $authController = new AuthController($config);
 $raceController = new RaceController($config);
-$publicController = new PublicController();
+$publicController = new PublicController($config);
 
 $csrfMiddleware = [Csrf::class, 'handle'];
 $authMiddleware = [Auth::class, 'handle'];
