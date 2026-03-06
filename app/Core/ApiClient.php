@@ -153,7 +153,7 @@ final class ApiClient
         if ($file !== null && ($file['tmp_name'] ?? '') !== '' && is_file($file['tmp_name'])) {
             $name = $file['name'] ?? 'photo.jpg';
             $post = $this->buildMultipart($data, $file, $name);
-            return $this->request('PUT', $url, [
+            return $this->request('POST', $url, [
                 'Authorization: Bearer ' . $token,
             ], $post);
         }
